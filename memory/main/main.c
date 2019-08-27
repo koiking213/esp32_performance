@@ -17,6 +17,7 @@
 #define N 100
 #define SIZE 100
 #define SPIFFS_ADDR 0x310000
+#define SPIFFS_ADDR2 0x320000
 
 uint32_t global_variable;
 
@@ -75,6 +76,27 @@ void flash_to_spi_sram()
   printf("2nd 16KB memcpy from flash to spi_sram: %lld[us]\n", esp_timer_get_time()-prev_time);
   heap_caps_free(to);
 }
+
+void flash_to_sram(float* to, int size)
+{
+  int64_t prev_time = esp_timer_get_time();
+  spi_flash_read(SPIFFS_ADDR, to, size);
+  printf("1st %dB memcpy from flash to sram: %lld[us]\n", size, esp_timer_get_time()-prev_time);
+  prev_time = esp_timer_get_time();
+  spi_flash_read(SPIFFS_ADDR2, to, size);
+  printf("2nd %dB memcpy from flash to sram: %lld[us]\n", size, esp_timer_get_time()-prev_time);
+}
+
+void sram_to_flash(float* from, int size)
+{
+  int64_t prev_time = esp_timer_get_time();
+  spi_flash_write(SPIFFS_ADDR, from, size);
+  printf("1st %dB memcpy to flash from sram: %lld[us]\n", size, esp_timer_get_time()-prev_time);
+  prev_time = esp_timer_get_time();
+  spi_flash_write(SPIFFS_ADDR2, from, size);
+  printf("2nd %dB memcpy to flash from sram: %lld[us]\n", size, esp_timer_get_time()-prev_time);
+}
+
 
 void app_main()
 {
